@@ -30,6 +30,7 @@ export class BoardsController {
   @Get()
   getAllBoards(@GetUser() user: User): Promise<Board[]> {
     this.logger.verbose(`User "${user.username}" retrieving all boards.`);
+    console.log(process.env.NODE_ENV);
     return this.boardsService.getAllBoards(user);
   }
 

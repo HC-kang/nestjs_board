@@ -1,67 +1,27 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Board, BoardStatus } from './board.model';
+import { BoardStatus } from './board-status.enum';
 import { v1 as uuid } from 'uuid';
-import { CreateBoardDto } from './\bdto/create-board.dto';
+import { CreateBoardDto } from './dto/create-board.dto';
 import { BoardRepository } from './board.repository';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Board } from './board.entity';
 
 @Injectable()
 export class BoardsService {
-  constructor(private boardRepository: BoardRepository) {}
+  constructor(
+    @InjectRepository(BoardRepository)
+    private boardRepository: BoardRepository,
+  ) {}
 
-  private boards: Board[] = [
-    {
-      id: '1',
-      title: 'Board title 1',
-      description: 'Board description 1',
-      status: BoardStatus.PUBLIC,
-    },
-    {
-      id: '2f31ba50-9a51-11ed-a736-51e701ff0a58',
-      title: 'board1',
-      description: 'description1',
-      status: BoardStatus.PUBLIC,
-    },
-    {
-      id: '8edd4e10-9a51-11ed-8ea9-d708fe486df7',
-      title: 'board2',
-      description: 'description2',
-      status: BoardStatus.PRIVATE,
-    },
-  ];
-
-  getAllBoards(): Board[] {
-    return this.boards;
+  async createBoard(createBoardDto: CreateBoardDto): Promise<Board> {
+    return this.boardRepository.createBoard(createBoardDto);
   }
 
-  createBoard(createBoardDto: CreateBoardDto): Board {
-    const { title, description } = createBoardDto;
-    const board: Board = {
-      id: uuid(),
-      title,
-      description,
-      status: BoardStatus.PUBLIC,
-    };
-
-    this.boards.push(board);
-    return board;
-  }
-
-  getBoardById(id: string): Board {
-    const aBoard = this.boards.find((board) => board.id === id);
+  async getBoardById(id: number): Promise<Board> {
+    const aBoard = await this.boardRepository.findOne({ where: { id } });
     if (!aBoard) {
-      throw new NotFoundException(`Can't find board with id ${id}`);
+      throw new NotFoundException(`Board with ID "${id}" not found`);
     }
     return aBoard;
-  }
-
-  deleteBoard(id: string): void {
-    const aBoard = this.getBoardById(id);
-    this.boards = this.boards.filter((board) => board.id !== aBoard.id);
-  }
-
-  updateBoardStatus(id: string, status: BoardStatus): Board {
-    const board = this.getBoardById(id);
-    board.status = status;
-    return board;
   }
 }

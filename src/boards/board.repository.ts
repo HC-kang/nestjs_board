@@ -1,21 +1,21 @@
 import { CustomRepository } from 'src/database/typeorm-ex.decorator';
 import { Repository } from 'typeorm';
-import { CreateBoardDto } from './\bdto/create-board.dto';
+import { CreateBoardDto } from './dto/create-board.dto';
 import { Board } from './board.entity';
-import { BoardStatus } from './board.model';
+import { BoardStatus } from './board-status.enum';
 
 @CustomRepository(Board)
 export class BoardRepository extends Repository<Board> {
   async createBoard(createBoardDto: CreateBoardDto): Promise<Board> {
     const { title, description } = createBoardDto;
 
-    const board = this.create({
+    const newBoard = this.create({
       title,
       description,
       status: BoardStatus.PUBLIC,
     });
 
-    await this.save(board);
-    return board;
+    await this.save(newBoard);
+    return newBoard;
   }
 }
